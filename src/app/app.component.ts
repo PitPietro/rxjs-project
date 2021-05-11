@@ -55,7 +55,72 @@ export class AppComponent implements OnInit {
     // );
   }
 
-  ngOnInit(): void {
-    this.baseObserver();
+  getInputFromField(): void {
+    let inputField: HTMLElement | null;
+    let buttonField: HTMLElement | null;
+
+    inputField = document.getElementById('my-input');
+    buttonField = document.getElementById('btn');
+
+    // basic event listener
+    if (inputField !== null) {
+      inputField.addEventListener('input', (event) => {
+        console.log((event.target as HTMLInputElement).value);
+      });
+    }
+
+    // make a custom 'fromEvent' function for the input field
+    if (inputField !== null) {
+      const sub = customFromEvent(inputField, 'input')
+        .subscribe({
+          next: value => {
+            console.log(`|fromEvent| ${(value.target as HTMLInputElement).value}`);
+          }
+        });
+
+      // unsubscribe
+      setTimeout(() => {
+        console.log('unsubscribe');
+        sub.unsubscribe();
+      }, 3000);
+    }
+
+
+    // make a custom 'fromEvent' function for the button
+    if (buttonField !== null) {
+      const sub = customFromEvent(buttonField, 'click')
+        .subscribe({
+          next: value => {
+            console.log(`|fromEvent| ${(value.target as HTMLInputElement).value}`);
+          }
+        });
+
+      // unsubscribe
+      setTimeout(() => {
+        console.log('unsubscribe');
+        sub.unsubscribe();
+      }, 3000);
+    }
   }
+
+  ngOnInit(): void {
+    // this.baseObserver();
+    this.getInputFromField();
+  }
+}
+
+
+function customFromEvent(el: HTMLElement, eventType: string): Observable<any> {
+  return new Observable(observer => {
+    const fn = (event: Event) => {
+      observer.next(event);
+    };
+    // add the event listener
+    el.addEventListener(eventType, fn);
+    // remove the event listener
+    return () => {
+      console.log('|customFromEvent| unsubscribe');
+      el.removeEventListener(eventType, fn);
+    };
+  });
 }
