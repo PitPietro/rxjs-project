@@ -1,5 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {fromEvent, Observable} from 'rxjs';
+import {distinctUntilChanged, filter, map} from 'rxjs/operators'; // pipeable operators
 
 @Component({
   selector: 'app-root',
@@ -107,9 +108,35 @@ export class AppComponent implements OnInit {
     }, 7000);
   }
 
+  /**
+   * pipe() function intercepts and manipulates data from the observable
+   */
+  getInputFromFieldPipeOperator(): void {
+    const subscription = fromEvent(document.getElementById('my-input') as HTMLElement, 'input')
+      .pipe(
+        // receives the input event before the subscription
+        // tap(event => console.log('|tap| ', event))
+        map(event => (event.target as HTMLInputElement).value),
+        filter(text => text.length > 5), // only show inputs which have at least 5 characters
+        distinctUntilChanged() // emits all items emitted by the source Observable that are distinct by comparison from the previous item
+      )
+      .subscribe({
+        next: (value: string) => {
+          console.log(`|fromEvent| ${value}`);
+        }
+      });
+
+    // unsubscribe
+    setTimeout(() => {
+      console.log('unsubscribe fromEvent input field');
+      subscription.unsubscribe();
+    }, 70000);
+  }
+
   ngOnInit(): void {
     // this.baseObserver();
-    this.getInputFromField();
+    // this.getInputFromField();
+    this.getInputFromFieldPipeOperator();
   }
 }
 
