@@ -71,7 +71,7 @@ export class AppComponent implements OnInit {
     const sub = customFromEvent(inputField, 'input')
       .subscribe({
         next: value => {
-          console.log(`|fromEvent| ${(value.target as HTMLInputElement).value}`);
+          console.log(`|customFromEvent| input: ${(value.target as HTMLInputElement).value}`);
         }
       });
 
@@ -85,7 +85,7 @@ export class AppComponent implements OnInit {
     const subButton = customFromEvent(buttonField, 'click')
       .subscribe({
         next: value => {
-          console.log(`|fromEvent| ${(value.target as HTMLInputElement).value}`);
+          console.log(`|customFromEvent| button ${(value.target as HTMLButtonElement).ATTRIBUTE_NODE}`);
         }
       });
 
@@ -95,7 +95,16 @@ export class AppComponent implements OnInit {
       subButton.unsubscribe();
     }, 5000);
 
-    const subscription = fromEvent(document.getElementById('my-input') as HTMLElement, 'input');
+    const subscription = fromEvent(document.getElementById('my-input') as HTMLElement, 'input')
+      .subscribe((event: Event) => {
+        console.log(`|fromEvent| ${(event.target as HTMLInputElement).value}`);
+      });
+
+    // unsubscribe
+    setTimeout(() => {
+      console.log('unsubscribe fromEvent input field');
+      subscription.unsubscribe();
+    }, 7000);
   }
 
   ngOnInit(): void {
