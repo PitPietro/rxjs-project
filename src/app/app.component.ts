@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {Observable} from 'rxjs';
+import {fromEvent, Observable} from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -56,51 +56,46 @@ export class AppComponent implements OnInit {
   }
 
   getInputFromField(): void {
-    let inputField: HTMLElement | null;
-    let buttonField: HTMLElement | null;
+    let inputField: HTMLElement;
+    let buttonField: HTMLElement;
 
-    inputField = document.getElementById('my-input');
-    buttonField = document.getElementById('btn');
+    inputField = document.getElementById('my-input') as HTMLElement;
+    buttonField = document.getElementById('btn') as HTMLElement;
 
     // basic event listener
-    if (inputField !== null) {
-      inputField.addEventListener('input', (event) => {
-        console.log((event.target as HTMLInputElement).value);
-      });
-    }
+    inputField.addEventListener('input', (event) => {
+      console.log((event.target as HTMLInputElement).value);
+    });
 
     // make a custom 'fromEvent' function for the input field
-    if (inputField !== null) {
-      const sub = customFromEvent(inputField, 'input')
-        .subscribe({
-          next: value => {
-            console.log(`|fromEvent| ${(value.target as HTMLInputElement).value}`);
-          }
-        });
+    const sub = customFromEvent(inputField, 'input')
+      .subscribe({
+        next: value => {
+          console.log(`|fromEvent| ${(value.target as HTMLInputElement).value}`);
+        }
+      });
 
-      // unsubscribe
-      setTimeout(() => {
-        console.log('unsubscribe');
-        sub.unsubscribe();
-      }, 3000);
-    }
-
+    // unsubscribe
+    setTimeout(() => {
+      console.log('unsubscribe input field');
+      sub.unsubscribe();
+    }, 3000);
 
     // make a custom 'fromEvent' function for the button
-    if (buttonField !== null) {
-      const sub = customFromEvent(buttonField, 'click')
-        .subscribe({
-          next: value => {
-            console.log(`|fromEvent| ${(value.target as HTMLInputElement).value}`);
-          }
-        });
+    const subButton = customFromEvent(buttonField, 'click')
+      .subscribe({
+        next: value => {
+          console.log(`|fromEvent| ${(value.target as HTMLInputElement).value}`);
+        }
+      });
 
-      // unsubscribe
-      setTimeout(() => {
-        console.log('unsubscribe');
-        sub.unsubscribe();
-      }, 3000);
-    }
+    // unsubscribe
+    setTimeout(() => {
+      console.log('unsubscribe button');
+      subButton.unsubscribe();
+    }, 5000);
+
+    const subscription = fromEvent(document.getElementById('my-input') as HTMLElement, 'input');
   }
 
   ngOnInit(): void {
