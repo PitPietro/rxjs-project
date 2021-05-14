@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import {fromEvent, interval, of} from 'rxjs';
 import {
+  debounceTime,
   distinct,
   distinctUntilChanged,
   distinctUntilKeyChanged,
@@ -11,6 +12,7 @@ import {
   reduce,
   scan,
   take,
+  takeUntil,
   takeWhile
 } from 'rxjs/operators';
 
@@ -82,6 +84,58 @@ export class PipeableOperatorsService {
   }
 
   /**
+   * A constant which stores an observable needs, by convention, the `$` as post-fix.
+   */
+  handleMouseClick(): void {
+    const click$ = fromEvent(document, 'click');
+
+    console.log('|pipe| takeUntil mouse click');
+    interval(1000)
+      .pipe(
+        takeUntil(click$)
+        // skipUntil(click$)
+      )
+      .subscribe({
+        next: value => {
+          console.log(`|next| value: ${value}`);
+        },
+        error: err => {
+          console.log(`|error| err: ${err}`);
+        },
+        complete: () => {
+          console.log('|complete|');
+        }
+      });
+  }
+
+  /**
+   * The synergy between 'debounceTime()' and 'distinctUntilChanged()' allow the user to have the time
+   * to input the value to use the (fake) HTTP call. Moreover, if it deletes some lines and then
+   * insert back the same word, it does not make another call.
+   */
+  fakeBackendHTTPCall(): void {
+    const inputField = document.getElementById('my-input') as HTMLElement;
+    fromEvent(inputField, 'input')
+      .pipe(
+        map((event) => (event.target as HTMLInputElement).value),
+        filter(value => value.length >= 4),
+        debounceTime(1000),
+        distinctUntilChanged()
+      )
+      .subscribe({
+        next: value => {
+          console.log(`|fake HTTP call| value: ${value}`);
+        },
+        error: err => {
+          console.log(`|error| err: ${err}`);
+        },
+        complete: () => {
+          console.log('|complete|');
+        }
+      });
+  }
+
+  /**
    *
    * @param list list of numbers on which the map() function will be performed
    * @private
@@ -100,7 +154,7 @@ export class PipeableOperatorsService {
           console.log(`|error| err: ${err}`);
         },
         complete: () => {
-          console.log('|complete');
+          console.log('|complete|');
         }
       });
   }

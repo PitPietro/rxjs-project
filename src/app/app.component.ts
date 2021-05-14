@@ -126,6 +126,8 @@ export class AppComponent implements OnInit {
     // this.creationOperatorsService.fromOperator();
     // this.creationOperatorsService.getInputFromFieldPipeOperator('my-input', 'input');
     this.pipeableOperatorsService.pipeableOperators();
+    this.pipeableOperatorsService.handleMouseClick();
+    this.pipeableOperatorsService.fakeBackendHTTPCall();
   }
 }
 
