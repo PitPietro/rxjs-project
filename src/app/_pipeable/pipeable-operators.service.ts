@@ -1,6 +1,18 @@
 import {Injectable} from '@angular/core';
-import {fromEvent, of} from 'rxjs';
-import {distinct, distinctUntilChanged, filter, map, reduce, scan} from 'rxjs/operators';
+import {fromEvent, interval, of} from 'rxjs';
+import {
+  distinct,
+  distinctUntilChanged,
+  distinctUntilKeyChanged,
+  filter,
+  first,
+  last,
+  map,
+  reduce,
+  scan,
+  take,
+  takeWhile
+} from 'rxjs/operators';
 
 interface BaseInterface {
   id: number;
@@ -10,7 +22,7 @@ interface Cart extends BaseInterface {
   cost: number;
 }
 
-interface User extends BaseInterface{
+interface User extends BaseInterface {
   isAdmin: boolean;
 }
 
@@ -27,13 +39,22 @@ export class PipeableOperatorsService {
   }
 
   pipeableOperators(): void {
-    const list = [1, 2, 3, 4, 1];
+    const list = [1, 2, 3, 4, 5, 1, 1, 2, 7, 7];
 
-    this.mapOperator(list);
-    this.filterOperator(list);
-    this.reduceOperator(list);
-    this.scanOperator(list);
-    this.distinctOperator(list);
+    // this.mapOperator(list);
+    // this.filterOperator(list);
+    // this.reduceOperator(list);
+    // this.scanOperator(list);
+
+    // this.distinctOperator(list);
+    // this.distinctUntilChangedOperator(list);
+    // this.distinctUntilKeyChangedOperator();
+
+    // this.takeOperator(list);
+    // this.takeWhileOperator(list);
+
+    this.firstOperator(list);
+    this.lastOperator(list);
   }
 
   /**
@@ -298,26 +319,28 @@ export class PipeableOperatorsService {
   }
 
   /**
+   * Returns an Observable that emits all items emitted by the source Observable that are distinct by comparison from previous items.
    *
    * The parameters are:
    * <ol>
    *   <li>
-   *     <code></code> ~
+   *     <code>function</code> ~ The <code>keySelector</code> is an optional function that select which value you want to check as distinct.
    *   </li>
    *   <li>
-   *     <code></code> ~
+   *     <code>Observable</code> ~ The <code>flushes</code> is an optional parameter. It flushes the internal HashSet of the operator.
    *   </li>
    * </ol>
    *
    * The return value is:
    * <ul>
    *   <li>
-   *     <code></code> ~
+   *     <code>Observable</code> ~ An Observable that emits items from the source Observable with distinct values.
    *   </li>
    * </ul>
    *
    * <b>Please Note</b> This operator does not work with list of objects unless you specify the parameter that must be taken as unique.
    * @param list list of numbers on which the filter() function will be performed
+   * @method distinct
    * @private
    */
   private distinctOperator(list: number[]): void {
@@ -359,6 +382,301 @@ export class PipeableOperatorsService {
       .subscribe({
         next: value => {
           console.log(`|next| value: ${JSON.stringify(value, null, 2)}`);
+        },
+        error: err => {
+          console.log(`|error| err: ${err}`);
+        },
+        complete: () => {
+          console.log('|complete|');
+        }
+      });
+  }
+
+  /**
+   * Returns an Observable that emits all items emitted by the source Observable that are distinct by comparison from the previous item.
+   *
+   * The parameters are:
+   * <ol>
+   *   <li>
+   *     <code>function</code> ~ The <code>keySelector</code> is an optional function that select which value you want to check as distinct.
+   *   </li>
+   *   <li>
+   *     <code>Observable</code> ~ The <code>flushes</code> is an optional parameter. It flushes the internal HashSet of the operator.
+   *   </li>
+   * </ol>
+   *
+   * The return value is:
+   * <ul>
+   *   <li>
+   *     <code>Observable</code> ~ An Observable that emits items from the source Observable with distinct values.
+   *   </li>
+   * </ul>
+   *
+   * <b>Please Note</b> This operator does not work with list of objects unless you specify the parameter that must be taken as unique.
+   *
+   * @see {@link distinct}
+   * @see {@link distinctUntilKeyChanged}
+   *
+   * @param list list of numbers on which the filter() function will be performed
+   * @method distinctUntilChanged
+   * @private
+   */
+  private distinctUntilChangedOperator(list: number[]): void {
+    console.log('|pipe| distinctUntilChanged: avoid duplicates with the previous element');
+    of(...list)
+      .pipe(
+        distinctUntilChanged()
+      )
+      .subscribe({
+        next: value => {
+          console.log(`|next| value: ${value}`);
+        },
+        error: err => {
+          console.log(`|error| err: ${err}`);
+        },
+        complete: () => {
+          console.log('|complete|');
+        }
+      });
+  }
+
+  /**
+   * Returns an Observable that emits all items emitted by the source Observable that are distinct by comparison from the
+   * previous item, using a property accessed by using the key provided to check if the two items are distinct.
+   *
+   * The parameters are:
+   * <ol>
+   *   <li>
+   *     <code>string</code> ~ The <code>key</code> is an optional <code>string</code> parameter for object property lookup on each item.
+   *   </li>
+   *   <li>
+   *     <code>function</code> ~ The <code>compare</code> optional function is called to test if an item is distinct from the
+   *     previous item in the source.
+   *   </li>
+   * </ol>
+   *
+   * The return value is:
+   * <ul>
+   *   <li>
+   *     <code>Observable</code> ~ An Observable that emits items from the source with distinct values based on the key specified.
+   *   </li>
+   * </ul>
+   *
+   * <b>Please Note</b> This operator does not work with list of objects unless you specify the parameter that must be taken as unique.
+   *
+   * @see {@link distinct}
+   * @see {@link distinctUntilChanged}
+   *
+   * @method distinctUntilKeyChanged
+   * @private
+   */
+  private distinctUntilKeyChangedOperator(): void {
+
+    // with a array of objects
+    const pets: Pet[] = [
+      {id: 1, name: 'Pit'},
+      {id: 1, name: 'Pat'},
+      {id: 2, name: 'Jil'},
+      {id: 2, name: 'Bil'},
+      {id: 3, name: 'Man'},
+      {id: 3, name: 'Min'},
+    ];
+
+    console.log('|pipe| distinctUntilKeyChanged with objects');
+    of(...pets) // from(pets)
+      .pipe(
+        distinctUntilKeyChanged('id')
+      )
+      .subscribe({
+        next: value => {
+          console.log(`|next| value: ${JSON.stringify(value, null, 2)}`);
+        },
+        error: err => {
+          console.log(`|error| err: ${err}`);
+        },
+        complete: () => {
+          console.log('|complete|');
+        }
+      });
+  }
+
+  /**
+   * Emits only the first `count` values emitted by the source Observable.
+   *
+   * The parameters are:
+   * 1. `ArgumentOutOfRangeError` ~ The maximum number of `next` values to emit.
+   *
+   * The return value is:
+   * - `Observable<T>` ~ An Observable that emits only the first `count` values emitted by the source Observable, or all of the
+   * values from the source if the source emits fewer than `count` values.
+   *
+   * @param list list of numbers on which the filter() function will be performed
+   * @param num number of element to take
+   * @private
+   */
+  private takeOperator(list: number[], num: number = 3): void {
+    console.log('|pipe| take');
+    of(...list)
+      .pipe(
+        take(num)
+      )
+      .subscribe({
+        next: value => {
+          console.log(`|next| value: ${value}`);
+        },
+        error: err => {
+          console.log(`|error| err: ${err}`);
+        },
+        complete: () => {
+          console.log('|complete|');
+        }
+      });
+  }
+
+  /**
+   * Emits values emitted by the source Observable so long as each value satisfies the given `predicate`, and then completes
+   * as soon as this `predicate` is not satisfied.
+   *
+   * The parameters are:
+   * 1. `unction(value: T, index: number): boolean` ~ The `predicate` is a function that evaluates a value emitted by the
+   * source Observable and returns a boolean. Also takes the (zero-based) index as the second argument.
+   * 2. `boolean` ~ When set to `true`, emit the value that caused `predicate` to return `false`.
+   *
+   * The return value is:
+   * - `Observable<T>` ~ An Observable that emits the values from the source Observable so long as each value satisfies
+   * the condition defined by the `predicate`, then completes.
+   *
+   * @param list list of numbers on which the filter() function will be performed
+   * @private
+   */
+  private takeWhileOperator(list: number[]): void {
+    console.log('|pipe| takeWhile');
+    of(...list)
+      .pipe(
+        takeWhile(value => value < 5, false)
+      )
+      .subscribe({
+        next: value => {
+          console.log(`|next| value: ${value}`);
+        },
+        error: err => {
+          console.log(`|error| err: ${err}`);
+        },
+        complete: () => {
+          console.log('|complete|');
+        }
+      });
+
+    // stop interval() operator
+    console.log('|pipe| takeWhile inside interval()');
+    interval(500)
+      .pipe(
+        takeWhile(value => value < 10, true)
+        // reduce(...)
+      )
+      .subscribe({
+        next: value => {
+          console.log(`|next| value: ${value}`);
+        },
+        error: err => {
+          console.log(`|error| err: ${err}`);
+        },
+        complete: () => {
+          console.log('|complete|');
+        }
+      });
+  }
+
+  /**
+   * Emits only the first value (or the first value that meets some condition) emitted by the source Observable.
+   *
+   * The parameters are:
+   * 1. `function(value: T, index: number, source: Observable<T>` ~ Optional function called with each item to test for condition matching.
+   * 2. `R` ~ An optional default value to provide if last predicate isn't met or no values were emitted.
+   *
+   * The return value is:
+   * - `Observable` ~ n Observable that emits only the last item satisfying the given condition from the source, or
+   * an `NoSuchElementException` if no such items are emitted.
+   *
+   * @param list list of numbers on which the filter() function will be performed
+   * @private
+   */
+  private firstOperator(list: number[]): void {
+    console.log('|pipe| first');
+    of(...list)
+      .pipe(
+        first()
+      )
+      .subscribe({
+        next: value => {
+          console.log(`|next| value: ${value}`);
+        },
+        error: err => {
+          console.log(`|error| err: ${err}`);
+        },
+        complete: () => {
+          console.log('|complete|');
+        }
+      });
+
+    // add a condition
+    console.log('|pipe| first with condition');
+    of(...list)
+      .pipe(
+        first(value => value > 4)
+      )
+      .subscribe({
+        next: value => {
+          console.log(`|next| value: ${value}`);
+        },
+        error: err => {
+          console.log(`|error| err: ${err}`);
+        },
+        complete: () => {
+          console.log('|complete|');
+        }
+      });
+  }
+
+  /**
+   * Returns an Observable that emits only the last item emitted by the source Observable.
+   *
+   * The parameters are:
+   * 1. `function` ~ The condition any source emitted item has to satisfy.
+   * 2. `R` ~ The default value emitted in case no valid value was found on the source.
+   *
+   * The return value is:
+   * - `Observable<T|R>` ~ An Observable of the first item that matches the condition
+   * @param list
+   * @private
+   */
+  private lastOperator(list: number[]): void {
+    console.log('|pipe| last');
+    of(...list)
+      .pipe(
+        last()
+      )
+      .subscribe({
+        next: value => {
+          console.log(`|next| value: ${value}`);
+        },
+        error: err => {
+          console.log(`|error| err: ${err}`);
+        },
+        complete: () => {
+          console.log('|complete|');
+        }
+      });
+
+    // add a condition
+    console.log('|pipe| last with condition');
+    of(...list)
+      .pipe(
+        last(value => value > 4)
+      )
+      .subscribe({
+        next: value => {
+          console.log(`|next| value: ${value}`);
         },
         error: err => {
           console.log(`|error| err: ${err}`);
