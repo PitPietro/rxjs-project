@@ -1,8 +1,10 @@
 import {Injectable} from '@angular/core';
-import {from, of} from 'rxjs';
+import {from, fromEvent, of} from 'rxjs';
+import {distinctUntilChanged, filter, map} from 'rxjs/operators'; // pipeable operators
 
 /**
  * The interval() operator will never reach the 'complete' clause of the .subscribe
+ * The timer() operators works very similar to interval()
  */
 @Injectable({
   providedIn: 'root'
@@ -10,6 +12,68 @@ import {from, of} from 'rxjs';
 export class CreationOperatorsService {
 
   constructor() {
+  }
+
+  pipeableOperator(): void {
+    const list = [1, 2, 3, 4, 1];
+
+    console.log('|pipe| map: double the values');
+    of(...list)
+      .pipe(
+        map(value => value * 2)
+      )
+      .subscribe({
+        next: value => {
+          console.log(`|next| value: ${value}`);
+        },
+        error: err => {
+          console.log(`|error| err: ${err}`);
+        },
+        complete: () => {
+          console.log('|complete');
+        }
+      });
+
+    console.log('|pipe| filter: check if the values meet the criteria');
+    of(...list)
+      .pipe(
+        filter(value => value >= 3)
+      )
+      .subscribe({
+        next: value => {
+          console.log(`|next| value: ${value}`);
+        },
+        error: err => {
+          console.log(`|error| err: ${err}`);
+        },
+        complete: () => {
+          console.log('|complete');
+        }
+      });
+  }
+
+  /**
+   * pipe() receives the input event before the subscription.
+   * it intercepts and manipulates data from the observable.
+   */
+  getInputFromFieldPipeOperator(elementId: string, eventName: string, minLength: number = 5, unsubscribeTimeout: number = 10000): void {
+    const subscription = fromEvent(document.getElementById(elementId) as HTMLElement, eventName)
+      .pipe(
+        map(event => (event.target as HTMLInputElement).value),
+        filter(text => text.length > minLength), // only show inputs which have at least 5 characters
+        distinctUntilChanged() // emits all items emitted by the source Observable that are distinct by comparison from the previous item
+      )
+      .subscribe({
+        next: (value: string) => {
+          console.log(`|fromEvent| ${value}`);
+        }
+      });
+
+    // unsubscribe
+    setTimeout(() => {
+      console.log('unsubscribe fromEvent input field');
+      subscription.unsubscribe();
+    }, unsubscribeTimeout);
   }
 
   /**
