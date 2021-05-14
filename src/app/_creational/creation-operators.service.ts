@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {from, fromEvent, of} from 'rxjs';
-import {distinctUntilChanged, filter, map} from 'rxjs/operators'; // pipeable operators
+import {distinctUntilChanged, filter, map, reduce, scan} from 'rxjs/operators'; // pipeable operators
 
 /**
  * The interval() operator will never reach the 'complete' clause of the .subscribe
@@ -47,9 +47,39 @@ export class CreationOperatorsService {
           console.log(`|error| err: ${err}`);
         },
         complete: () => {
-          console.log('|complete');
+          console.log('|complete|');
         }
       });
+
+    const users = [
+      {id: 1, isAdmin: false},
+      {id: 2, isAdmin: true},
+      {id: 3, isAdmin: true},
+      {id: 4, isAdmin: true},
+      {id: 5, isAdmin: false},
+      {id: 6, isAdmin: false},
+      {id: 7, isAdmin: true},
+      {id: 8, isAdmin: false},
+    ];
+    console.log('|pipe| filter: check if the values meet the criteria (values are objects)');
+    of(...users)
+      .pipe(
+        filter(user => user.isAdmin)
+      )
+      .subscribe({
+        next: value => {
+          console.log(`|next| value: ${JSON.stringify(value, null, 2)}`);
+        },
+        error: err => {
+          console.log(`|error| err: ${err}`);
+        },
+        complete: () => {
+          console.log('|complete|');
+        }
+      });
+
+    this.reducePipeableOperator(list);
+    this.scanPipeableOperator(list);
   }
 
   /**
@@ -120,6 +150,85 @@ export class CreationOperatorsService {
     from(list)
       .subscribe(value => {
         console.log(value);
+      });
+  }
+
+  /**
+   * reduce() is an accumulation pipeable operator.
+   * Applies an accumulator function over the source Observable, and returns the
+   * accumulated result when the source completes, given an optional seed value.
+   *
+   * The parameters are:
+   * <ol>
+   *   <li>
+   *     <code>function(acc: R, value: T, index: number): R</code> ~ The accumulator function called on each source value.
+   *   </li>
+   *   <li>
+   *     <code>seed</code> ~ The initial accumulation value.
+   *   </li>
+   * </ol>
+   *
+   * The return value is:<br/>
+   * <code>Observable<R></code> ~ An Observable that emits a single value that is the result of accumulating the values emitted
+   * by the source Observable.
+   * @param list number list on which perform the reduce() function
+   * @private
+   */
+  private reducePipeableOperator(list: number[]): void {
+    console.log('|pipe| reduce');
+    of(...list)
+      .pipe(
+        reduce((acc, value) => value + acc, 0)
+      )
+      .subscribe({
+        next: value => {
+          console.log(`|next| value: ${value}`);
+        },
+        error: err => {
+          console.log(`|error| err: ${err}`);
+        },
+        complete: () => {
+          console.log('|complete|');
+        }
+      });
+  }
+
+  /**
+   * scan() behave in the same way of reduce(), but it emits the intermediate values while accumulating the result
+   * Applies an accumulator function over the source Observable, and returns each intermediate result, with an optional seed value.
+   *
+   * The parameters are:
+   * <ol>
+   *   <li>
+   *     <code>function(acc: R, value: T, index: number): R</code> ~ The accumulator function called on each source value.
+   *   </li>
+   *   <li>
+   *     <code>seed</code> ~ The initial accumulation value.
+   *   </li>
+   * </ol>
+   *
+   * The return value is:<br/>
+   * <code>Observable<R></code> ~ An Observable that emits a single value that is the result of accumulating the values emitted
+   * by the source Observable.
+   * @param list number list on which perform the reduce() function
+   * @private
+   */
+  private scanPipeableOperator(list: number[]): void {
+    console.log('|pipe| scan');
+    of(...list)
+      .pipe(
+        scan((acc, value) => value + acc, 0)
+      )
+      .subscribe({
+        next: value => {
+          console.log(`|next| value: ${value}`);
+        },
+        error: err => {
+          console.log(`|error| err: ${err}`);
+        },
+        complete: () => {
+          console.log('|complete|');
+        }
       });
   }
 }
