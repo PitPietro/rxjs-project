@@ -1,6 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {fromEvent, Observable} from 'rxjs';
-import {distinctUntilChanged, filter, map} from 'rxjs/operators'; // pipeable operators
+import {distinctUntilChanged, filter, map} from 'rxjs/operators';
+import {CreationOperatorsService} from './_creational/creation-operators.service'; // pipeable operators
 
 @Component({
   selector: 'app-root',
@@ -9,6 +10,11 @@ import {distinctUntilChanged, filter, map} from 'rxjs/operators'; // pipeable op
 })
 export class AppComponent implements OnInit {
   title = 'rxjs-project';
+  creationOperatorsService: CreationOperatorsService;
+
+  constructor(creationOperatorsService: CreationOperatorsService) {
+    this.creationOperatorsService = creationOperatorsService;
+  }
 
   baseObserver(): void {
     let counter = 0;
@@ -136,7 +142,9 @@ export class AppComponent implements OnInit {
   ngOnInit(): void {
     // this.baseObserver();
     // this.getInputFromField();
-    this.getInputFromFieldPipeOperator();
+    // this.getInputFromFieldPipeOperator();
+    this.creationOperatorsService.ofOperator();
+    this.creationOperatorsService.fromOperator();
   }
 }
 
