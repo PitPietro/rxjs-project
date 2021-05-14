@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {fromEvent, Observable} from 'rxjs';
-import {distinctUntilChanged, filter, map} from 'rxjs/operators'; // pipeable operators
 import {CreationOperatorsService} from './_creational/creation-operators.service';
+import {PipeableOperatorsService} from './_pipeable/pipeable-operators.service';
 
 @Component({
   selector: 'app-root',
@@ -11,9 +11,14 @@ import {CreationOperatorsService} from './_creational/creation-operators.service
 export class AppComponent implements OnInit {
   title = 'rxjs-project';
   creationOperatorsService: CreationOperatorsService;
+  pipeableOperatorsService: PipeableOperatorsService;
 
-  constructor(creationOperatorsService: CreationOperatorsService) {
+  constructor(
+    creationOperatorsService: CreationOperatorsService,
+    pipeableOperatorsService: PipeableOperatorsService
+  ) {
     this.creationOperatorsService = creationOperatorsService;
+    this.pipeableOperatorsService = pipeableOperatorsService;
   }
 
   baseObserver(): void {
@@ -120,7 +125,7 @@ export class AppComponent implements OnInit {
     // this.creationOperatorsService.ofOperator();
     // this.creationOperatorsService.fromOperator();
     // this.creationOperatorsService.getInputFromFieldPipeOperator('my-input', 'input');
-    this.creationOperatorsService.pipeableOperator();
+    this.pipeableOperatorsService.pipeableOperators();
   }
 }
 
